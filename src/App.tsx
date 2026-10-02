@@ -1,11 +1,39 @@
-import { useState } from 'react'
-const mock=[{id:1,n:"Laachi Queen",v:"2.1k",t:"Desi",c:"#ff2e88"},{id:2,n:"Jalalpur Doll",v:"1.8k",t:"Punjabi",c:"#7c3aed"},{id:3,n:"Gujrat Rose",v:"890",t:"New",c:"#06b6d4"},{id:4,n:"Pari",v:"3.2k",t:"Trending",c:"#f59e0b"},{id:5,n:"Noor",v:"1.2k",t:"Desi",c:"#10b981"},{id:6,n:"Sana",v:"2.5k",t:"Live Now",c:"#ef4444"}]
-export default function App(){
-const [a,setA]=useState("All")
-const cats=["All","Desi","Punjabi","Live Now","New","Trending"]
-return(<div style={{background:'#0a0a0a',color:'white',minHeight:'100vh',fontFamily:'system-ui'}}>
-<div style={{padding:'16px',borderBottom:'1px solid #222',display:'flex',justifyContent:'space-between',alignItems:'center'}}><h1 style={{fontSize:'22px',fontWeight:800,color:'#ff2e88'}}>Laachi<span style={{color:'white'}}>Live</span></h1></div>
-<div style={{display:'flex',gap:'8px',padding:'14px',overflowX:'auto'}}>{cats.map(x=>(<button key={x} onClick={()=>setA(x)} style={{padding:'6px 16px',borderRadius:'20px',border:'none',background:a===x?'#ff2e88':'#1e1e1e',color:'white',fontWeight:600,fontSize:'13px'}}>{x}</button>))}</div>
-<div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:'12px',padding:'12px'}}>
-{mock.filter(m=>a==="All"||m.t===a).map(m=>(<div key={m.id} style={{background:'#151515',borderRadius:'16px',overflow:'hidden',border:'1px solid #222'}}><div style={{height:'160px',background:m.c,position:'relative',display:'flex',alignItems:'center',justifyContent:'center',fontSize:'40px'}}>{m.n[0]}<span style={{position:'absolute',top:'8px',left:'8px',background:'red',fontSize:'10px',padding:'3px 8px',borderRadius:'10px',fontWeight:700}}>● LIVE</span><span style={{position:'absolute',bottom:'8px',right:'8px',background:'rgba(0,0,0,0.7)',fontSize:'11px',padding:'3px 8px',borderRadius:'10px'}}>{m.v} watching</span></div><div style={{padding:'10px'}}><div style={{fontWeight:700,fontSize:'14px'}}>{m.n}</div><div style={{fontSize:'12px',color:'#aaa'}}>{m.t} • Online</div></div></div>))}</div>
-<div style={{textAlign:'center',padding:'30px',color:'#555',fontSize:'12px'}}>laachilive.vercel.app</div></div>)}
+import { useState } from "react";
+const rooms = [
+  { id: "L", name: "Laachi Queen", cat: "Desi", color: "#ff1493", viewers: "2.1k" },
+  { id: "J", name: "Jalalpur Doll", cat: "Punjabi", color: "#8a2be2", viewers: "1.8k" },
+  { id: "G", name: "Gujrat Rose", cat: "New", color: "#00bfff", viewers: "890" },
+  { id: "P", name: "Pari", cat: "Trending", color: "#ff8c00", viewers: "3.2k" },
+];
+export default function App() {
+  const [selected, setSelected] = useState<any>(null);
+  if (selected) {
+    return (
+      <div style={{ background: "#000", color: "#fff", minHeight: "100vh", padding: 20 }}>
+        <button onClick={() => setSelected(null)} style={{ background: "#ff1493", color: "#fff", padding: "10px 20px", borderRadius: 20, border: "none" }}>← Back</button>
+        <div style={{ marginTop: 30, textAlign: "center" }}>
+          <div style={{ width: 100, height: 100, background: selected.color, borderRadius: 50, margin: "0 auto", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 50 }}>{selected.id}</div>
+          <h1>{selected.name} LIVE</h1>
+          <p>{selected.viewers} watching</p>
+          <div style={{ marginTop: 30, background: "#222", padding: 20, borderRadius: 15 }}>
+            <p>🎤 Voice Chat Connected - Mic ON</p>
+            <button style={{ marginTop: 15, background: "#ff1493", color: "#fff", padding: "12px 30px", borderRadius: 20, border: "none" }}>Join Voice</button>
+          </div>
+        </div>
+      </div>
+    );
+  }
+  return (
+    <div style={{ background: "#000", color: "#fff", minHeight: "100vh" }}>
+      <h1 style={{ padding: 20, margin: 0 }}><span style={{ color: "#ff1493" }}>Laachi</span>Live</h1>
+      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 15, padding: 20 }}>
+        {rooms.map(r => (
+          <div key={r.id} onClick={() => setSelected(r)} style={{ background: "#111", borderRadius: 20, overflow: "hidden" }}>
+            <div style={{ background: r.color, height: 160, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 50 }}>{r.id}</div>
+            <div style={{ padding: 10 }}><b>{r.name}</b><div style={{ fontSize: 12, color: "#aaa" }}>{r.cat}</div></div>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
