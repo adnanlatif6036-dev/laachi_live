@@ -21,46 +21,50 @@ export default function App(){
   const [chat, setChat] = useState([{user:"Ali", text:"Welcome ❤️"}, {user:"Sara", text:"Hi Lahore!"}])
   const [msg, setMsg] = useState('')
   const filtered = city==='All' ? rooms : rooms.filter((r:any)=>r.city===city)
+  
   const handleCreate = () => {
     if(!title) return alert("Title likho")
     const newRoom = {id:Date.now(), title, city:city2, type, usersCount:1, mics:[{avatar:"😎"},null,null,null,null,null,null,null]}
-    setRooms([newRoom, ...rooms]); setShowCreate(false); setTitle('')
+    setRooms([newRoom, ...rooms]); 
+    setShowCreate(false); 
+    setTitle('')
   }
+
   if(!isLogin){
     return (
       <div style={{minHeight:"100vh", background:"#000", display:"flex", alignItems:"center", justifyContent:"center", padding:20}}>
-        <div style={{background:"#1a1a1a", padding:30, borderRadius:20, width:"100%", maxWidth:340, textAlign:"center", border:"1px solid #333"}}>
+        <div style={{background:"#1a1a1a", padding:30, borderRadius:20, width:"100%", maxWidth:340, textAlign:"center"}}>
           <h1 style={{color:"#ff1493", fontSize:36, margin:0}}>Laachi Live</h1>
           <p style={{color:"#aaa", marginTop:8}}>Pakistan Voice Chat</p>
-          <button onClick={()=>setIsLogin(true)} style={{marginTop:20, width:"100%", padding:14, background:"linear-gradient(90deg,#ff1493,#8a2be2)", border:0, color:"#fff", borderRadius:12, fontWeight:"bold"}}>Enter App 🚀</button>
+          <button onClick={()=>setIsLogin(true)} style={{marginTop:20, width:"100%", padding:14, background:"linear-gradient(90deg,#ff1493,#ff6a00)", border:0, borderRadius:12, color:"#fff", fontWeight:"bold", fontSize:16}}>Login / Guest Join</button>
         </div>
       </div>
     )
   }
+
   if(view==='wallet') return <WalletPage coins={coins} onBack={()=>setView('home')} />
   if(view==='profile') return <ProfilePage coins={coins} onBack={()=>setView('home')} />
   if(view==='room' && selectedRoom){
-  return <RoomPage room={selectedRoom} onBack={()=>setView('home')} />
-                                                                  
-    
-  
+    return <RoomPage room={selectedRoom} onBack={()=>setView('home')} />
+  }
+
   return (
     <div style={{minHeight:"100vh", background:"#000", color:"#fff", paddingBottom:80}}>
       <div style={{padding:16, background:"#111", position:"sticky", top:0, borderBottom:"1px solid #222"}}>
         <div style={{display:"flex", justifyContent:"space-between", alignItems:"center"}}>
           <h2 style={{margin:0, color:"#ff1493"}}>Laachi Live 🔴</h2>
           <div style={{display:"flex", gap:8}}>
-            <button onClick={()=>setView('wallet')} style={{background:"#1a1a1a", color:"#FFD700", border:"1px solid #333", padding:"6px 10px", borderRadius:20}}>💰 {coins}</button>
-            <button onClick={()=>setView('profile')} style={{background:"#1a1a1a", color:"#fff", border:"1px solid #333", padding:"6px 10px", borderRadius:20}}>👤</button>
+            <button onClick={()=>setView('wallet')} style={{background:"#1a1a1a", color:"#FFD700", border:"1px solid #333", padding:"6px 12px", borderRadius:20}}>🪙 {coins}</button>
+            <button onClick={()=>setView('profile')} style={{background:"#1a1a1a", color:"#fff", border:"1px solid #333", padding:"6px 12px", borderRadius:20}}>👤</button>
           </div>
         </div>
         <CityFilter city={city} setCity={setCity} />
       </div>
       <div style={{padding:12}}>
         {filtered.map((room:any)=><div key={room.id} onClick={()=>{setSelectedRoom(room); setView('room')}}><RoomCard room={room} /></div>)}
+        <button onClick={()=>setShowCreate(true)} style={{position:"fixed", bottom:20, right:20, width:56, height:56, borderRadius:"50%", background:"#ff1493", color:"#fff", border:0, fontSize:30}}>+</button>
+        <CreateRoomModal show={showCreate} setShow={setShowCreate} title={title} setTitle={setTitle} type={type} setType={setType} city={city2} setCity={setCity2} onCreate={handleCreate} />
       </div>
-      <button onClick={()=>setShowCreate(true)} style={{position:"fixed", bottom:20, right:20, width:56, height:56, borderRadius:28, background:"linear-gradient(90deg,#ff1493,#8a2be2)", border:0, color:"#fff", fontSize:28}}>+</button>
-      <CreateRoomModal show={showCreate} setShow={setShowCreate} title={title} setTitle={setTitle} type={type} setType={setType} city={city2} setCity={setCity2} onCreate={handleCreate} />
     </div>
   )
 }
