@@ -1,6 +1,6 @@
 import { initializeApp } from "firebase/app";
-import { getAuth, GoogleAuthProvider, signInWithPopup } from "firebase/auth";
-import { useState } from "react";
+import { getAuth, GoogleAuthProvider, signInWithRedirect, getRedirectResult, onAuthStateChanged, signOut } from "firebase/auth";
+import { useEffect, useState } from "react";
 
 const firebaseConfig = {
   apiKey: "AIzaSyCqzckg_BKLkkQ5U4NnWxfFoGha7E",
@@ -18,15 +18,24 @@ const provider = new GoogleAuthProvider();
 
 function App() {
   const [user, setUser] = useState<any>(null);
+  const [loading, setLoading] = useState(true);
 
-  const loginWithGoogle = async () => {
-    try {
-      const result = await signInWithPopup(auth, provider);
-      setUser(result.user);
-    } catch (error) {
-      alert("Login failed: " + error);
-    }
+  useEffect(() => {
+    // Redirect ke baad result check karo
+    getRedirectResult(auth).catch(err => console.log(err));
+    
+    const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
+      setUser(currentUser);
+      setLoading(false);
+    });
+    return () => unsubscribe();
+  }, []);
+
+  const loginWithGoogle = () => {
+    signInWithRedirect(auth, provider);
   };
+
+  if (loading) return <div style={{textAlign:"center", marginTop:100}}>Loading...</div>;
 
   return (
     <div style={{ textAlign: "center", marginTop: "100px", fontFamily: "sans-serif" }}>
@@ -36,7 +45,7 @@ function App() {
           <h2>Welcome {user.displayName} ❤️</h2>
           <img src={user.photoURL} width="90" style={{ borderRadius: "50%" }} />
           <p>{user.email}</p>
-          <button onClick={() => setUser(null)}>Logout</button>
+          <button onClick={() => signOut(auth)} style={{padding:"10px 20px", marginTop:10}}>Logout</button>
         </div>
       ) : (
         <button
