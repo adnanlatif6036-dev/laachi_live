@@ -1,51 +1,47 @@
-import { useState } from "react";
 import { initializeApp } from "firebase/app";
 import { getAuth, GoogleAuthProvider, signInWithPopup } from "firebase/auth";
+import { useState } from "react";
 
 const firebaseConfig = {
-  apiKey: "AIzaSyCqzckcg_BKLkkQQ54UhVaxFfFToFGha7E",
-  authDomain: "chill-masti-live-make-friends.firebaseapp.com",
-  projectId: "chill-masti-live-make-friends",
-  storageBucket: "chill-masti-live-make-friends.firebasestorage.app",
-  messagingSenderId: "5871111249525",
-  appId: "1:587111249525:web:56688e8817f49424f42ea3c",
-  measurementId: "G-1X9HY9LSSZ"
+  apiKey: "YOUR_API_KEY",
+  authDomain: "YOUR_AUTH_DOMAIN",
+  projectId: "YOUR_PROJECT_ID",
+  appId: "YOUR_APP_ID"
 };
 
 const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
+const provider = new GoogleAuthProvider();
 
 function App() {
-  const [user, setUser] = useState<any>(() => {
-    const s = localStorage.getItem("laachi_user");
-    return s ? JSON.parse(s) : null;
-  });
+  const [user, setUser] = useState<any>(null);
 
-  const googleLogin = async () => {
-    const provider = new GoogleAuthProvider();
+  const loginWithGoogle = async () => {
     try {
       const result = await signInWithPopup(auth, provider);
-      const userData = {
-        name: result.user.displayName,
-        email: result.user.email,
-        photo: result.user.photoURL
-      };
-      localStorage.setItem("laachi_user", JSON.stringify(userData));
-      setUser(userData);
-    } catch (error: any) {
-      alert(error.message);
+      setUser(result.user);
+      console.log("Login Success:", result.user);
+    } catch (error) {
+      console.error("Login Error:", error);
     }
   };
 
   return (
-    <div style={{ background: '#000', color: '#fff', minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', flexDirection: 'column' }}>
-      <h1 style={{ color: '#ff00a0', fontSize: '32px', marginBottom: '20px' }}>Laachi Live</h1>
-      {!user ? (
-        <button onClick={googleLogin} style={{ background: '#fff', color: '#000', padding: '12px 24px', borderRadius: '25px', border: 'none', fontWeight: 'bold', cursor: 'pointer' }}>
-          Continue with Google
-        </button>
+    <div style={{ textAlign: "center", marginTop: "100px" }}>
+      <h1>Laachi Live</h1>
+      {user ? (
+        <div>
+          <h2>Welcome {user.displayName}</h2>
+          <img src={user.photoURL} width="80" style={{ borderRadius: "50%" }} />
+          <p>{user.email}</p>
+        </div>
       ) : (
-        <h1>Welcome {user.name}</h1>
+        <button
+          onClick={loginWithGoogle}
+          style={{ padding: "12px 20px", fontSize: "16px", cursor: "pointer" }}
+        >
+          Login with Google
+        </button>
       )}
     </div>
   );
