@@ -3,10 +3,13 @@ import { getAuth, GoogleAuthProvider, signInWithPopup } from "firebase/auth";
 import { useState } from "react";
 
 const firebaseConfig = {
-  apiKey: "YOUR_API_KEY",
-  authDomain: "YOUR_AUTH_DOMAIN",
-  projectId: "YOUR_PROJECT_ID",
-  appId: "YOUR_APP_ID"
+  apiKey: "AIzaSyCqzckg_BKLkkQ5U4NnWxfFoGha7E",
+  authDomain: "chill-masti-live-make-friends.firebaseapp.com",
+  projectId: "chill-masti-live-make-friends",
+  storageBucket: "chill-masti-live-make-friends.firebasestorage.app",
+  messagingSenderId: "587111249525",
+  appId: "1:587111249525:web:56680e881749424f42ea3c",
+  measurementId: "G-1X0HY9LSSZ"
 };
 
 const app = initializeApp(firebaseConfig);
@@ -20,25 +23,25 @@ function App() {
     try {
       const result = await signInWithPopup(auth, provider);
       setUser(result.user);
-      console.log("Login Success:", result.user);
     } catch (error) {
-      console.error("Login Error:", error);
+      alert("Login failed: " + error);
     }
   };
 
   return (
-    <div style={{ textAlign: "center", marginTop: "100px" }}>
+    <div style={{ textAlign: "center", marginTop: "100px", fontFamily: "sans-serif" }}>
       <h1>Laachi Live</h1>
       {user ? (
         <div>
-          <h2>Welcome {user.displayName}</h2>
-          <img src={user.photoURL} width="80" style={{ borderRadius: "50%" }} />
+          <h2>Welcome {user.displayName} ❤️</h2>
+          <img src={user.photoURL} width="90" style={{ borderRadius: "50%" }} />
           <p>{user.email}</p>
+          <button onClick={() => setUser(null)}>Logout</button>
         </div>
       ) : (
         <button
           onClick={loginWithGoogle}
-          style={{ padding: "12px 20px", fontSize: "16px", cursor: "pointer" }}
+          style={{ padding: "14px 24px", fontSize: "18px", background: "black", color: "white", borderRadius: "8px", cursor: "pointer" }}
         >
           Login with Google
         </button>
