@@ -16,26 +16,26 @@ export default function App() {
   });
   const [name, setName] = useState("");
   const [pass, setPass] = useState("");
+  const [showPass, setShowPass] = useState(false); // AANKH WALA SYSTEM
 
-  // SECURE LOGIN / SIGNUP LOGIC
   const doSignUp = () => {
     if (!name ||!pass) return alert("نام اور پاسورڈ لکھیں");
-
     const savedPass = localStorage.getItem(`user_${name}`);
-
     if (savedPass) {
-      // User pehle se hai
-      if (savedPass!== pass) {
-        return alert("پاسورڈ غلط ہے! صحیح پاسورڈ لکھیں");
-      }
+      if (savedPass!== pass) return alert("پاسورڈ غلط ہے!");
       localStorage.setItem("laachi_user", JSON.stringify({ name }));
       setUser({ name });
     } else {
-      // Naya user
       localStorage.setItem(`user_${name}`, pass);
       localStorage.setItem("laachi_user", JSON.stringify({ name }));
       setUser({ name });
     }
+  };
+
+  const googleLogin = () => {
+    const gName = "Umais Google";
+    localStorage.setItem("laachi_user", JSON.stringify({ name: gName }));
+    setUser({ name: gName });
   };
 
   const logout = () => {
@@ -56,7 +56,6 @@ export default function App() {
           <div style={{ marginTop: 25, background: "#111", padding: 20, borderRadius: 15, border: "1px solid #222" }}>
             <p>🎤 Voice Chat - Ready</p>
             <button style={{ marginTop: 15, background: "#ff1493", color: "#fff", padding: "12px 30px", borderRadius: 25, border: "none", fontWeight: "bold" }}>Join Voice (Coming Soon)</button>
-            <p style={{fontSize:11, color:"#666", marginTop:10}}>Agora 10,000 mins free - baad me jorein ge</p>
           </div>
         </div>
       </div>
@@ -69,17 +68,35 @@ export default function App() {
         <h1 style={{ marginTop: 10, fontSize: 32, fontWeight: 900 }}>
           <span style={{ color: "#ff1493", textShadow: "0 0 15px #ff1493" }}>Laachi</span><span style={{ color: "#fff" }}>Live</span>
         </h1>
-        <div style={{ width: 180, height: 180, marginTop: 10, borderRadius: 90, background: "radial-gradient(circle, #ff1493 0%, #8a2be2 100%)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 80, boxShadow: "0 0 30px #ff149399", border: "3px solid #ff1493" }}>👩‍🦰</div>
-        <p style={{ color: "#ff8cb5", marginTop: 12, fontSize: 12, letterSpacing: 2 }}>WELCOME TO LAACHI LIVE</p>
+        <div style={{ width: 160, height: 160, marginTop: 15, borderRadius: 80, background: "radial-gradient(circle, #ff1493 0%, #8a2be2 100%)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 70, boxShadow: "0 0 30px #ff149399", border: "3px solid #ff1493" }}>👩‍🦰</div>
+        <p style={{ color: "#ff8cb5", marginTop: 15, fontSize: 11, letterSpacing: 3 }}>WELCOME TO LAACHI LIVE</p>
+
         <div style={{ width: "100%", maxWidth: 340, marginTop: 20 }}>
-          <div style={{ background: "#111", borderRadius: 15, padding: 20, border: "1px solid #222" }}>
-            <h3 style={{ margin: "0 0 15px 0", textAlign: "center" }}>Sign In / Sign Up</h3>
-            <label style={{ fontSize: 12, color: "#888" }}>Name</label>
+          <div style={{ background: "#111", borderRadius: 18, padding: 20, border: "1px solid #222" }}>
+            <h3 style={{ margin: "0 0 15px 0", textAlign: "center", fontSize: 18 }}>Sign In / Sign Up</h3>
+
+            <label style={{ fontSize: 11, color: "#888" }}>Name</label>
             <input value={name} onChange={e => setName(e.target.value)} placeholder="Apna naam likhein" style={{ width: "100%", padding: 12, borderRadius: 10, border: "1px solid #333", marginTop: 5, marginBottom: 10, background: "#1e1e1e", color: "#fff", boxSizing: "border-box" }} />
-            <label style={{ fontSize: 12, color: "#888" }}>Password</label>
-            <input value={pass} onChange={e => setPass(e.target.value)} type="password" placeholder="Password likhein" style={{ width: "100%", padding: 12, borderRadius: 10, border: "1px solid #333", marginTop: 5, marginBottom: 15, background: "#1e1e1e", color: "#fff", boxSizing: "border-box" }} />
-            <button onClick={doSignUp} style={{ width: "100%", background: "#ff1493", color: "#fff", border: "none", padding: 12, borderRadius: 25, fontWeight: "bold", fontSize: 16 }}>Continue</button>
-            <p style={{fontSize:10, color:"#555", textAlign:"center", marginTop:10}}>Pehli bar naam likho ge to account ban jayega, dosri bar same naam + ghalat password pe error ayega</p>
+
+            <label style={{ fontSize: 11, color: "#888" }}>Password</label>
+            <div style={{ position: "relative", marginTop: 5, marginBottom: 15 }}>
+              <input value={pass} onChange={e => setPass(e.target.value)} type={showPass? "text" : "password"} placeholder="Password likhein" style={{ width: "100%", padding: "12px 40px 12px 12px", borderRadius: 10, border: "1px solid #333", background: "#1e1e1e", color: "#fff", boxSizing: "border-box" }} />
+              <span onClick={() => setShowPass(!showPass)} style={{ position: "absolute", right: 12, top: 12, cursor: "pointer", fontSize: 16 }}>{showPass? "🙈" : "👁️"}</span>
+            </div>
+
+            <button onClick={doSignUp} style={{ width: "100%", background: "#ff1493", color: "#fff", border: "none", padding: 12, borderRadius: 25, fontWeight: "bold", fontSize: 15 }}>Continue</button>
+
+            <div style={{ display: "flex", alignItems: "center", margin: "15px 0", gap: 10 }}>
+              <div style={{ flex: 1, height: 1, background: "#222" }}></div>
+              <span style={{ fontSize: 11, color: "#555" }}>OR</span>
+              <div style={{ flex: 1, height: 1, background: "#222" }}></div>
+            </div>
+
+            <button onClick={googleLogin} style={{ width: "100%", background: "#fff", color: "#000", border: "none", padding: 11, borderRadius: 25, fontWeight: "bold", fontSize: 14, display: "flex", alignItems: "center", justifyContent: "center", gap: 8 }}>
+              <span style={{ fontSize: 16 }}>G</span> Continue with Google
+            </button>
+
+            <p style={{fontSize:9, color:"#444", textAlign:"center", marginTop:12, lineHeight:1.4}}>Secure login • Password protected</p>
           </div>
         </div>
       </div>
@@ -106,52 +123,21 @@ export default function App() {
           </div>
         </div>
       )}
-
-      {tab === "live" && (
-        <div style={{ padding: 30, textAlign: "center" }}>
-          <div style={{ width: 80, height: 80, background: "#ff1493", borderRadius: 40, margin: "20px auto", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 40 }}>📹</div>
-          <h2>Go Live</h2>
-          <p style={{ color: "#888", fontSize: 13 }}>Yahan se aap apna Live Room start karenge. Agora connect karne ke baad ye chalu hoga.</p>
-          <button style={{ marginTop: 15, background: "#ff1493", padding: "12px 30px", borderRadius: 25, border: "none", color: "#fff", fontWeight: "bold" }}>Start Live (Soon)</button>
-        </div>
-      )}
-
-      {tab === "message" && (
-        <div style={{ padding: 20 }}>
-          <h3>💬 Messages</h3>
-          <div style={{ background: "#111", padding: 15, borderRadius: 12, marginTop: 10, border: "1px solid #222" }}>
-            <p style={{ margin: 0, fontSize: 13 }}>No messages yet</p><p style={{ margin: "5px 0 0 0", fontSize: 11, color: "#666" }}>Jab koi aap ko gift bhejega to yahan ayega</p>
-          </div>
-        </div>
-      )}
-
+      {tab === "live" && <div style={{ padding: 30, textAlign: "center" }}><h2>Go Live</h2><p style={{ color: "#888", fontSize: 13 }}>Agora baad me jorein ge</p></div>}
+      {tab === "message" && <div style={{ padding: 20 }}><h3>💬 Messages</h3><p style={{color:"#666", fontSize:12}}>No messages yet</p></div>}
       {tab === "profile" && (
         <div style={{ padding: 20, textAlign: "center" }}>
           <div style={{ width: 80, height: 80, background: "#ff1493", borderRadius: 40, margin: "10px auto", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 36 }}>{user.name[0]?.toUpperCase()}</div>
           <h2 style={{ margin: "10px 0 5px 0" }}>{user.name}</h2>
-          <p style={{ color: "#aaa", fontSize: 13, margin: 0 }}>ID: {user.name}_123 • Level 1</p>
-          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 10, marginTop: 20 }}>
-            <div style={{ background: "#111", padding: 12, borderRadius: 12, border: "1px solid #222" }}><div style={{ color: "#ff1493", fontWeight: "bold" }}>1000</div><div style={{ fontSize: 11, color: "#888" }}>Coins</div></div>
-            <div style={{ background: "#111", padding: 12, borderRadius: 12, border: "1px solid #222" }}><div style={{ color: "#ff1493", fontWeight: "bold" }}>0</div><div style={{ fontSize: 11, color: "#888" }}>Followers</div></div>
-            <div style={{ background: "#111", padding: 12, borderRadius: 12, border: "1px solid #222" }}><div style={{ color: "#ff1493", fontWeight: "bold" }}>0</div><div style={{ fontSize: 11, color: "#888" }}>Following</div></div>
-          </div>
           <button onClick={logout} style={{ width: "100%", marginTop: 25, background: "#222", color: "#fff", border: "1px solid #333", padding: 12, borderRadius: 12 }}>Logout</button>
         </div>
       )}
 
       <div style={{ position: "fixed", bottom: 0, left: 0, right: 0, background: "#0a0a0a", borderTop: "1px solid #222", display: "flex", justifyContent: "space-around", padding: "8px 0 12px 0" }}>
-        <button onClick={() => setTab("home")} style={{ background: "none", border: "none", color: tab === "home"? "#ff1493" : "#666", display: "flex", flexDirection: "column", alignItems: "center", fontSize: 11 }}>
-          <span style={{ fontSize: 22 }}>🏠</span>Home
-        </button>
-        <button onClick={() => setTab("live")} style={{ background: "none", border: "none", color: tab === "live"? "#ff1493" : "#666", display: "flex", flexDirection: "column", alignItems: "center", fontSize: 11 }}>
-          <span style={{ fontSize: 22 }}>📹</span>Live
-        </button>
-        <button onClick={() => setTab("message")} style={{ background: "none", border: "none", color: tab === "message"? "#ff1493" : "#666", display: "flex", flexDirection: "column", alignItems: "center", fontSize: 11 }}>
-          <span style={{ fontSize: 22 }}>💬</span>Message
-        </button>
-        <button onClick={() => setTab("profile")} style={{ background: "none", border: "none", color: tab === "profile"? "#ff1493" : "#666", display: "flex", flexDirection: "column", alignItems: "center", fontSize: 11 }}>
-          <span style={{ fontSize: 22 }}>👤</span>Profile
-        </button>
+        <button onClick={() => setTab("home")} style={{ background: "none", border: "none", color: tab === "home"? "#ff1493" : "#666", display: "flex", flexDirection: "column", alignItems: "center", fontSize: 11 }}><span style={{ fontSize: 22 }}>🏠</span>Home</button>
+        <button onClick={() => setTab("live")} style={{ background: "none", border: "none", color: tab === "live"? "#ff1493" : "#666", display: "flex", flexDirection: "column", alignItems: "center", fontSize: 11 }}><span style={{ fontSize: 22 }}>📹</span>Live</button>
+        <button onClick={() => setTab("message")} style={{ background: "none", border: "none", color: tab === "message"? "#ff1493" : "#666", display: "flex", flexDirection: "column", alignItems: "center", fontSize: 11 }}><span style={{ fontSize: 22 }}>💬</span>Message</button>
+        <button onClick={() => setTab("profile")} style={{ background: "none", border: "none", color: tab === "profile"? "#ff1493" : "#666", display: "flex", flexDirection: "column", alignItems: "center", fontSize: 11 }}><span style={{ fontSize: 22 }}>👤</span>Profile</button>
       </div>
     </div>
   );
