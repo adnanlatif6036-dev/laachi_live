@@ -1,6 +1,6 @@
 import { useState } from "react";
 
-const rooms = [
+const initialRooms = [
   { id: "L", name: "Laachi Queen", cat: "Desi", color: "#ff1493", viewers: "2.1k" },
   { id: "J", name: "Jalalpur Doll", cat: "Punjabi", color: "#8a2be2", viewers: "1.8k" },
   { id: "G", name: "Gujrat Rose", cat: "New", color: "#00bfff", viewers: "890" },
@@ -10,6 +10,10 @@ const rooms = [
 export default function App() {
   const [selected, setSelected] = useState<any>(null);
   const [tab, setTab] = useState("home");
+  const [rooms, setRooms] = useState(() => {
+    const s = localStorage.getItem("laachi_rooms");
+    return s? JSON.parse(s) : initialRooms;
+  });
   const [user, setUser] = useState<any>(() => {
     const s = localStorage.getItem("laachi_user");
     return s? JSON.parse(s) : null;
@@ -17,57 +21,84 @@ export default function App() {
   const [name, setName] = useState("");
   const [pass, setPass] = useState("");
   const [showPass, setShowPass] = useState(false);
+  const [showCreate, setShowCreate] = useState(false);
+  const [newRoomName, setNewRoomName] = useState("");
+  const [newRoomCat, setNewRoomCat] = useState("Desi");
+  const [seats, setSeats] = useState<any[]>([]);
+  const [isMuted, setIsMuted] = useState(false);
+  const [chatMsg, setChatMsg] = useState("");
+  const [chats, setChats] = useState<string[]>(["Welcome to LaachiLive! 🎉"]);
+  const myId = useState(() => Math.floor(Math.random() * 90000) + 10000)[0];
 
-  // SIGN UP - Naya Account
-  const doSignUp = () => {
-    if (!name ||!pass) return alert("نام اور پاسورڈ لکھیں");
-    if (localStorage.getItem(`user_${name}`)) {
-      return alert("یہ نام پہلے سے بنا ہوا ہے! Sign In کریں");
+  const openRoom = (r: any) => {
+    setSelected(r);
+    const initialSeats = Array.from({ length: 25 }, (_, i) => i === 0? { name: user.name, muted: false, isHost: true } : null);
+    setSeats(initialSeats);
+    setChats([`Welcome to ${r.name} room! 🎉`, `${user.name} joined as Host 👑`]);
+  };
+
+  const saveRooms = (nr: any[]) => { setRooms(nr); localStorage.setItem("laachi_rooms", JSON.stringify(nr)); };
+
+  const handleCreateRoom = () => {
+    if (!newRoomName) return alert("Room ka naam likho!");
+    const colors = ["#ff1493", "#8a2be2", "#00bfff", "#ff8c00", "#00ff7f", "#ff4500"];
+    const newRoom = { id: newRoomName[0].toUpperCase(), name: newRoomName, cat: newRoomCat, color: colors[Math.floor(Math.random() * 6)], viewers: "1", owner: user.name };
+    saveRooms([newRoom,...rooms]); setNewRoomName(""); setShowCreate(false); setTab("home");
+  };
+
+  const doSignUp = () => { if (!name ||!pass) return alert("Naam likho"); if (localStorage.getItem(`user_${name}`)) return alert("Naam pehle se hai!"); localStorage.setItem(`user_${name}`, pass); localStorage.setItem("laachi_user", JSON.stringify({ name })); setUser({ name }); };
+  const doLogin = () => { if (!name ||!pass) return alert("Naam likho"); const sp = localStorage.getItem(`user_${name}`); if (!sp) return alert("Naam nahi mila!"); if (sp!== pass) return alert("Password galat!"); localStorage.setItem("laachi_user", JSON.stringify({ name })); setUser({ name }); };
+  const googleLogin = () => { const gName = "Umais Google"; localStorage.setItem("laachi_user", JSON.stringify({ name: gName })); setUser({ name: gName }); };
+  const logout = () => { localStorage.removeItem("laachi_user"); setUser(null); setSelected(null); setTab("home"); };
+
+  const sitOnSeat = (idx: number) => {
+    if (seats[idx]) return;
+    if (seats.some((s: any) => s?.name === user.name)) {
+      return alert("Aap pehle se ek seat par baithe ho! Pehle wali seat choro phir dusri par baitho!");
     }
-    localStorage.setItem(`user_${name}`, pass);
-    localStorage.setItem("laachi_user", JSON.stringify({ name }));
-    setUser({ name });
-    alert("Account ban gaya! ✅");
+    const ns = [...seats]; ns[idx] = { name: user.name, muted: false, isHost: false }; setSeats(ns);
+    setChats(prev => [...prev, `${user.name} sat on seat ${idx + 1} 🎤`]);
   };
 
-  // SIGN IN - Purana Account Khole
-  const doLogin = () => {
-    if (!name ||!pass) return alert("نام اور پاسورڈ لکھیں");
-    const savedPass = localStorage.getItem(`user_${name}`);
-    if (!savedPass) {
-      return alert("یہ نام موجود نہیں ہے! پہلے Sign Up کریں");
-    }
-    if (savedPass!== pass) {
-      return alert("نام یا پاسورڈ غلط ہے!");
-    }
-    localStorage.setItem("laachi_user", JSON.stringify({ name }));
-    setUser({ name });
+  const leaveSeat = (idx: number) => {
+    if (idx === 0) return alert("Host seat nahi chor sakta!");
+    if (seats[idx]?.name!== user.name) return;
+    const ns = [...seats]; ns[idx] = null; setSeats(ns);
+    setChats(prev => [...prev, `${user.name} left seat ${idx + 1}`]);
   };
 
-  const googleLogin = () => {
-    const gName = "Umais Google";
-    localStorage.setItem("laachi_user", JSON.stringify({ name: gName }));
-    setUser({ name: gName });
-  };
-
-  const logout = () => {
-    localStorage.removeItem("laachi_user");
-    setUser(null);
-    setSelected(null);
-    setTab("home");
-  };
+  const sendChat = () => { if (!chatMsg) return; setChats([...chats, `${user.name}: ${chatMsg}`]); setChatMsg(""); };
 
   if (selected) {
     return (
-      <div style={{ background: "#000", color: "#fff", minHeight: "100vh", padding: 20, fontFamily: "sans-serif" }}>
-        <button onClick={() => setSelected(null)} style={{ background: "#ff1493", color: "#fff", padding: "8px 18px", borderRadius: 20, border: "none" }}>← Back</button>
-        <div style={{ marginTop: 40, textAlign: "center" }}>
-          <div style={{ width: 90, height: 90, background: selected.color, borderRadius: 45, margin: "0 auto", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 45 }}>{selected.id}</div>
-          <h2>{selected.name} LIVE</h2>
-          <p style={{ color: "#aaa" }}>{selected.viewers} watching • {user?.name}</p>
-          <div style={{ marginTop: 25, background: "#111", padding: 20, borderRadius: 15, border: "1px solid #222" }}>
-            <p>🎤 Voice Chat - Ready</p>
-            <button style={{ marginTop: 15, background: "#ff1493", color: "#fff", padding: "12px 30px", borderRadius: 25, border: "none", fontWeight: "bold" }}>Join Voice (Coming Soon)</button>
+      <div style={{ background: "linear-gradient(180deg, #1a0033 0%, #000 100%)", color: "#fff", minHeight: "100vh", display: "flex", flexDirection: "column" }}>
+        <div style={{ display: "flex", justifyContent: "space-between", padding: "10px 15px", alignItems: "center", background: "rgba(0,0,0,0.5)" }}>
+          <button onClick={() => setSelected(null)} style={{ background: "#ff1493", color: "#fff", padding: "6px 15px", borderRadius: 20, border: "none" }}>← Back</button>
+          <div style={{ textAlign: "center" }}><b style={{ fontSize: 14 }}>{selected.name}</b><div style={{ fontSize: 10, color: "#aaa" }}>ID: 107{myId} • Owner: {selected.owner || user.name}</div></div>
+          <span style={{ background: "#222", padding: "5px 10px", borderRadius: 15, fontSize: 12 }}>👥 {seats.filter(Boolean).length}/25</span>
+        </div>
+        <div style={{ padding: 10, display: "grid", gridTemplateColumns: "repeat(5, 1fr)", gap: 8, flex: 1, overflowY: "auto" }}>
+          {seats.map((s, i) => (
+            <div key={i} onClick={() => s? leaveSeat(i) : sitOnSeat(i)} style={{ background: s? (s.isHost? "rgba(255,215,0,0.2)" : "rgba(255,20,147,0.2)") : "rgba(255,255,255,0.05)", border: s? (s.isHost? "1px solid gold" : "1px solid #ff1493") : "1px dashed #333", borderRadius: 12, padding: "8px 3px", textAlign: "center" }}>
+              <div style={{ width: 38, height: 38, background: s? (s.isHost? "gold" : "#ff1493") : "#222", borderRadius: 20, margin: "0 auto", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 15, color: s?.isHost? "#000" : "#fff", fontWeight: "bold" }}>{s? s.name[0].toUpperCase() : "+"}</div>
+              <div style={{ fontSize: 9, marginTop: 4, color: s?.isHost? "gold" : "#fff", fontWeight: s?.isHost? "bold" : "normal", overflow: "hidden", whiteSpace: "nowrap" }}>{s? (s.isHost? "👑 " + s.name : s.name) : `Seat ${i + 1}`}</div>
+              <div style={{ fontSize: 8, color: s? (s.muted? "#ff4444" : "#00ff7f") : "#666" }}>{s? (s.muted? "🔇" : "🎤 Live") : "Empty"}</div>
+            </div>
+          ))}
+        </div>
+        <div style={{ background: "rgba(0,0,0,0.6)", height: 85, overflowY: "auto", padding: "8px 12px", fontSize: 11 }}>
+          {chats.map((c, i) => <div key={i} style={{ marginBottom: 3, color: c.includes("Welcome")? "gold" : "#ccc" }}>{c}</div>)}
+        </div>
+        <div style={{ background: "#0a0a0a", borderTop: "1px solid #222", padding: "10px" }}>
+          <div style={{ display: "flex", gap: 6, marginBottom: 10, overflowX: "auto" }}>
+            {[{ icon: "🎁", label: "Gift" }, { icon: "💎", label: "Diamonds" }, { icon: "🔒", label: "Lock" }, { icon: "👢", label: "Kick" }, { icon: "🎵", label: "Music" }, { icon: "🎲", label: "Game" }, { icon: "📢", label: "Notice" }, { icon: "⭐", label: "Admin" }].map(o => (
+              <div key={o.label} style={{ background: "#1a1a1a", borderRadius: 10, padding: "6px 10px", fontSize: 11, textAlign: "center", border: "1px solid #222", minWidth: 45 }}><div>{o.icon}</div><div style={{ fontSize: 8 }}>{o.label}</div></div>
+            ))}
+          </div>
+          <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
+            <button onClick={() => setIsMuted(!isMuted)} style={{ background: isMuted? "#ff4444" : "#222", color: "#fff", border: "1px solid #333", padding: "10px 14px", borderRadius: 25 }}>{isMuted? "🔇" : "🎤"}</button>
+            <input value={chatMsg} onChange={e => setChatMsg(e.target.value)} placeholder="Say something..." style={{ flex: 1, background: "#1a1a1a", border: "1px solid #333", borderRadius: 25, padding: "10px 15px", color: "#fff", fontSize: 12 }} />
+            <button onClick={sendChat} style={{ background: "#ff1493", color: "#fff", border: "none", padding: "10px 18px", borderRadius: 25, fontWeight: "bold", fontSize: 12 }}>Send</button>
           </div>
         </div>
       </div>
@@ -76,40 +107,17 @@ export default function App() {
 
   if (!user) {
     return (
-      <div style={{ background: "#000", color: "#fff", minHeight: "100vh", display: "flex", flexDirection: "column", alignItems: "center", fontFamily: "sans-serif", padding: 20 }}>
-        <h1 style={{ marginTop: 10, fontSize: 32, fontWeight: 900 }}>
-          <span style={{ color: "#ff1493", textShadow: "0 0 15px #ff1493" }}>Laachi</span><span style={{ color: "#fff" }}>Live</span>
-        </h1>
-        <div style={{ width: 150, height: 150, marginTop: 15, borderRadius: 75, background: "radial-gradient(circle, #ff1493 0%, #8a2be2 100%)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 65, boxShadow: "0 0 30px #ff149399", border: "3px solid #ff1493" }}>👩‍🦰</div>
-        <p style={{ color: "#ff8cb5", marginTop: 12, fontSize: 11, letterSpacing: 3 }}>WELCOME TO LAACHI LIVE</p>
-
+      <div style={{ background: "#000", color: "#fff", minHeight: "100vh", display: "flex", flexDirection: "column", alignItems: "center", padding: 20 }}>
+        <h1 style={{ fontSize: 32, fontWeight: 900 }}><span style={{ color: "#ff1493" }}>Laachi</span>Live</h1>
+        <div style={{ width: 150, height: 150, marginTop: 15, borderRadius: 75, background: "radial-gradient(circle, #ff1493 0%, #8a2be2 100%)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 65 }}>👩‍🦰</div>
         <div style={{ width: "100%", maxWidth: 340, marginTop: 18 }}>
           <div style={{ background: "#111", borderRadius: 18, padding: 20, border: "1px solid #222" }}>
-            <h3 style={{ margin: "0 0 15px 0", textAlign: "center" }}>Login / Signup</h3>
-
-            <label style={{ fontSize: 11, color: "#888" }}>Name</label>
-            <input value={name} onChange={e => setName(e.target.value)} placeholder="Apna naam likhein" style={{ width: "100%", padding: 12, borderRadius: 10, border: "1px solid #333", marginTop: 5, marginBottom: 10, background: "#1e1e1e", color: "#fff", boxSizing: "border-box" }} />
-
-            <label style={{ fontSize: 11, color: "#888" }}>Password</label>
-            <div style={{ position: "relative", marginTop: 5, marginBottom: 15 }}>
-              <input value={pass} onChange={e => setPass(e.target.value)} type={showPass? "text" : "password"} placeholder="Password likhein" style={{ width: "100%", padding: "12px 40px 12px 12px", borderRadius: 10, border: "1px solid #333", background: "#1e1e1e", color: "#fff", boxSizing: "border-box" }} />
-              <span onClick={() => setShowPass(!showPass)} style={{ position: "absolute", right: 12, top: 11, cursor: "pointer", fontSize: 16 }}>{showPass? "🙈" : "👁️"}</span>
-            </div>
-
-            <button onClick={doLogin} style={{ width: "100%", background: "#ff1493", color: "#fff", border: "none", padding: 12, borderRadius: 25, fontWeight: "bold", fontSize: 15 }}>Sign In - لاگ ان</button>
-            <button onClick={doSignUp} style={{ width: "100%", marginTop: 10, background: "#222", color: "#fff", border: "1px solid #333", padding: 12, borderRadius: 25, fontWeight: "bold", fontSize: 14 }}>New Account - نیا اکاؤنٹ بنائیں</button>
-
-            <div style={{ display: "flex", alignItems: "center", margin: "15px 0", gap: 10 }}>
-              <div style={{ flex: 1, height: 1, background: "#222" }}></div>
-              <span style={{ fontSize: 11, color: "#555" }}>OR</span>
-              <div style={{ flex: 1, height: 1, background: "#222" }}></div>
-            </div>
-
-            <button onClick={googleLogin} style={{ width: "100%", background: "#fff", color: "#000", border: "none", padding: 11, borderRadius: 25, fontWeight: "bold", fontSize: 14, display: "flex", alignItems: "center", justifyContent: "center", gap: 8 }}>
-              <span>G</span> Continue with Google
-            </button>
-
-            <p style={{ fontSize: 9, color: "#444", textAlign: "center", marginTop: 12 }}>Secure • Password Protected • Facebook Style Login</p>
+            <h3 style={{ textAlign: "center" }}>Login / Signup</h3>
+            <input value={name} onChange={e => setName(e.target.value)} placeholder="Apna naam likhein" style={{ width: "100%", padding: 12, borderRadius: 10, border: "1px solid #333", background: "#1e1e1e", color: "#fff", boxSizing: "border-box", marginBottom: 10 }} />
+            <div style={{ position: "relative", marginBottom: 15 }}><input value={pass} onChange={e => setPass(e.target.value)} type={showPass? "text" : "password"} placeholder="Password" style={{ width: "100%", padding: "12px 40px 12px 12px", borderRadius: 10, border: "1px solid #333", background: "#1e1e1e", color: "#fff", boxSizing: "border-box" }} /><span onClick={() => setShowPass(!showPass)} style={{ position: "absolute", right: 12, top: 11, cursor: "pointer" }}>{showPass? "🙈" : "👁️"}</span></div>
+            <button onClick={doLogin} style={{ width: "100%", background: "#ff1493", color: "#fff", border: "none", padding: 12, borderRadius: 25, fontWeight: "bold" }}>Sign In</button>
+            <button onClick={doSignUp} style={{ width: "100%", marginTop: 10, background: "#222", color: "#fff", border: "1px solid #333", padding: 12, borderRadius: 25 }}>New Account</button>
+            <button onClick={googleLogin} style={{ width: "100%", marginTop: 12, background: "#fff", color: "#000", border: "none", padding: 11, borderRadius: 25, fontWeight: "bold" }}>Continue with Google</button>
           </div>
         </div>
       </div>
@@ -117,40 +125,44 @@ export default function App() {
   }
 
   return (
-    <div style={{ background: "#000", color: "#fff", minHeight: "100vh", fontFamily: "sans-serif", paddingBottom: 70 }}>
-      <div style={{ display: "flex", justifyContent: "space-between", padding: "15px 20px", alignItems: "center", borderBottom: "1px solid #111", position: "sticky", top: 0, background: "#000", zIndex: 10 }}>
+    <div style={{ background: "#000", color: "#fff", minHeight: "100vh", paddingBottom: 70 }}>
+      <div style={{ display: "flex", justifyContent: "space-between", padding: "15px 20px", borderBottom: "1px solid #111", position: "sticky", top: 0, background: "#000", zIndex: 10 }}>
         <h2 style={{ margin: 0 }}><span style={{ color: "#ff1493" }}>Laachi</span>Live</h2>
-        <span style={{ background: "#1a1a1a", padding: "6px 12px", borderRadius: 15, fontSize: 12, border: "1px solid #333" }}>👤 {user.name} • 🪙 1000</span>
+        <span style={{ background: "#1a1a1a", padding: "6px 12px", borderRadius: 15, fontSize: 12 }}>👤 {user.name}</span>
       </div>
-
-      {tab === "home" && (
-        <div style={{ padding: 15 }}>
-          <h3 style={{ margin: "5px 0 12px 0" }}>🔥 Live Rooms</h3>
-          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12 }}>
-            {rooms.map(r => (
-              <div key={r.id} onClick={() => setSelected(r)} style={{ background: "#111", borderRadius: 15, overflow: "hidden", border: "1px solid #222" }}>
-                <div style={{ background: r.color, height: 120, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 40 }}>{r.id}</div>
-                <div style={{ padding: 10 }}><b style={{ fontSize: 13 }}>{r.name}</b><div style={{ fontSize: 11, color: "#aaa" }}>{r.cat} • {r.viewers}</div></div>
-              </div>
-            ))}
+      {showCreate && (
+        <div style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.8)", zIndex: 100, display: "flex", alignItems: "center", justifyContent: "center", padding: 20 }}>
+          <div style={{ background: "#111", borderRadius: 18, padding: 20, width: "100%", maxWidth: 320, border: "1px solid #333" }}>
+            <h3 style={{ marginTop: 0 }}>Create New Room</h3>
+            <input value={newRoomName} onChange={e => setNewRoomName(e.target.value)} placeholder="Jaise: Lahore Friends" style={{ width: "100%", padding: 12, borderRadius: 10, border: "1px solid #333", background: "#1e1e1e", color: "#fff", marginBottom: 12 }} />
+            <select value={newRoomCat} onChange={e => setNewRoomCat(e.target.value)} style={{ width: "100%", padding: 12, borderRadius: 10, border: "1px solid #333", background: "#1e1e1e", color: "#fff", marginBottom: 15 }}><option>Desi</option><option>Punjabi</option><option>New</option><option>Trending</option><option>Masti</option></select>
+            <div style={{ display: "flex", gap: 10 }}><button onClick={() => setShowCreate(false)} style={{ flex: 1, background: "#222", color: "#fff", border: "1px solid #333", padding: 12, borderRadius: 25 }}>Cancel</button><button onClick={handleCreateRoom} style={{ flex: 1, background: "#ff1493", color: "#fff", border: "none", padding: 12, borderRadius: 25, fontWeight: "bold" }}>Create</button></div>
           </div>
         </div>
       )}
-      {tab === "live" && <div style={{ padding: 30, textAlign: "center" }}><h2>Go Live</h2><p style={{ color: "#888", fontSize: 13 }}>Agora baad me</p></div>}
-      {tab === "message" && <div style={{ padding: 20 }}><h3>💬 Messages</h3><p style={{ color: "#666", fontSize: 12 }}>No messages</p></div>}
-      {tab === "profile" && (
-        <div style={{ padding: 20, textAlign: "center" }}>
-          <div style={{ width: 80, height: 80, background: "#ff1493", borderRadius: 40, margin: "10px auto", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 36 }}>{user.name[0]?.toUpperCase()}</div>
-          <h2>{user.name}</h2>
-          <button onClick={logout} style={{ width: "100%", marginTop: 25, background: "#222", color: "#fff", border: "1px solid #333", padding: 12, borderRadius: 12 }}>Logout</button>
+      {tab === "home" && (
+        <div style={{ padding: 15 }}>
+          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 12 }}><h3 style={{ margin: 0 }}>🔥 Live Rooms ({rooms.length})</h3><button onClick={() => setShowCreate(true)} style={{ background: "#ff1493", color: "#fff", border: "none", padding: "6px 14px", borderRadius: 20, fontSize: 12, fontWeight: "bold" }}>+ Create Room</button></div>
+          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12 }}>
+            {rooms.map((r: any) => (<div key={r.name} onClick={() => openRoom(r)} style={{ background: "#111", borderRadius: 15, overflow: "hidden", border: "1px solid #222" }}><div style={{ background: r.color, height: 120, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 40 }}>{r.id}</div><div style={{ padding: 10 }}><b style={{ fontSize: 13 }}>{r.name}</b><div style={{ fontSize: 11, color: "#aaa" }}>{r.cat}</div></div></div>))}
+          </div>
         </div>
       )}
-
-      <div style={{ position: "fixed", bottom: 0, left: 0, right: 0, background: "#0a0a0a", borderTop: "1px solid #222", display: "flex", justifyContent: "space-around", padding: "8px 0 12px 0" }}>
-        <button onClick={() => setTab("home")} style={{ background: "none", border: "none", color: tab === "home"? "#ff1493" : "#666", display: "flex", flexDirection: "column", alignItems: "center", fontSize: 11 }}><span style={{ fontSize: 22 }}>🏠</span>Home</button>
-        <button onClick={() => setTab("live")} style={{ background: "none", border: "none", color: tab === "live"? "#ff1493" : "#666", display: "flex", flexDirection: "column", alignItems: "center", fontSize: 11 }}><span style={{ fontSize: 22 }}>📹</span>Live</button>
-        <button onClick={() => setTab("message")} style={{ background: "none", border: "none", color: tab === "message"? "#ff1493" : "#666", display: "flex", flexDirection: "column", alignItems: "center", fontSize: 11 }}><span style={{ fontSize: 22 }}>💬</span>Message</button>
-        <button onClick={() => setTab("profile")} style={{ background: "none", border: "none", color: tab === "profile"? "#ff1493" : "#666", display: "flex", flexDirection: "column", alignItems: "center", fontSize: 11 }}><span style={{ fontSize: 22 }}>👤</span>Profile</button>
+      {tab === "live" && (<div style={{ padding: 30, textAlign: "center" }}><h2>🎙️ Go Live</h2><button onClick={() => setShowCreate(true)} style={{ background: "#ff1493", color: "#fff", border: "none", padding: "12px 25px", borderRadius: 25, fontWeight: "bold" }}>+ Create My Room</button></div>)}
+      {tab === "message" && <div style={{ padding: 20 }}><h3>💬 Messages</h3><p style={{ color: "#666" }}>No messages yet</p></div>}
+      {tab === "profile" && (
+        <div>
+          <div style={{ background: "linear-gradient(135deg, #ff1493, #8a2be2)", padding: 25 }}>
+            <div style={{ display: "flex", gap: 15, alignItems: "center" }}><div style={{ width: 75, height: 75, background: "#fff", borderRadius: 40, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 32, color: "#000" }}>{user.name[0]?.toUpperCase()}</div><div><h2 style={{ margin: 0 }}>{user.name}</h2><div style={{ fontSize: 12 }}>ID: 107{myId}</div></div></div>
+          </div>
+          <button onClick={logout} style={{ width: "90%", margin: "20px 5%", background: "#222", color: "#ff4d4d", border: "1px solid #333", padding: 13, borderRadius: 12 }}>Logout</button>
+        </div>
+      )}
+      <div style={{ position: "fixed", bottom: 0, left: 0, right: 0, background: "#0a0a0a", borderTop: "1px solid #222", display: "flex", justifyContent: "space-around", padding: "8px 0" }}>
+        <button onClick={() => setTab("home")} style={{ background: "none", border: "none", color: tab === "home"? "#ff1493" : "#666" }}>🏠<br />Home</button>
+        <button onClick={() => setTab("live")} style={{ background: "none", border: "none", color: tab === "live"? "#ff1493" : "#666" }}>📹<br />Live</button>
+        <button onClick={() => setTab("message")} style={{ background: "none", border: "none", color: tab === "message"? "#ff1493" : "#666" }}>💬<br />Msg</button>
+        <button onClick={() => setTab("profile")} style={{ background: "none", border: "none", color: tab === "profile"? "#ff1493" : "#666" }}>👤<br />Profile</button>
       </div>
     </div>
   );
