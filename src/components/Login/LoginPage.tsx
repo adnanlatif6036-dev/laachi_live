@@ -1,45 +1,30 @@
-import { useState } from "react";
-import { User, Lock, Eye, EyeOff } from "lucide-react";
-
-interface Props {
-  onLogin: (name: string) => void;
-}
-
-export default function LoginPage({ onLogin }: Props) {
-  const [showPass, setShowPass] = useState(false);
-  const [name, setName] = useState("");
-  const [pass, setPass] = useState("");
-
+export default function LoginPage({ onLogin }: any) {
   return (
-    <div className="min-h-screen bg-[#0a0a0a] flex items-center justify-center px-6">
-      <div className="w-full max-w-[380px]">
-        <div className="flex flex-col items-center mb-10">
-          <div className="w-[180px] h-[180px] rounded-full p-[4px] bg-gradient-to-br from-[#ff1a8a] to-[#7b2cff]">
-            <div className="w-full h-full rounded-full bg-black flex items-center justify-center">
-              <div className="text-[90px] font-black bg-gradient-to-br from-[#ff1a8a] to-[#7b2cff] bg-clip-text text-transparent -skew-x-12">L</div>
-            </div>
-          </div>
-          <h1 className="text-[42px] font-light text-white mt-6">LaachiLive</h1>
-          <p className="text-[#a0a0a0] text-[16px] mt-2">Connect · Talk · Live</p>
+    <div style={{ minHeight: "100vh", background: "#0d0d0d", display: "flex", justifyContent: "center", padding: "30px 0" }}>
+      <div style={{ width: "340px" }}>
+        <div style={{ textAlign: "center", marginBottom: "35px" }}>
+          <img src="/logo.png" style={{ width: "185px", height: "185px", margin: "0 auto", display: "block" }} alt="logo" />
+          <h1 style={{ color: "white", fontSize: "42px", fontWeight: 400, margin: "15px 0 5px" }}>LaachiLive</h1>
+          <p style={{ color: "#aaa", fontSize: "15px" }}>Connect · Talk · Live</p>
         </div>
-        <div className="space-y-6">
-          <div>
-            <label className="text-[#b0b0b0] mb-2 block">Name</label>
-            <div className="relative">
-              <User className="absolute left-4 top-1/2 -translate-y-1/2 text-[#8a8a8a] w-6 h-6" />
-              <input value={name} onChange={(e)=>setName(e.target.value)} placeholder="Enter your name" className="w-full h-[56px] bg-[#222] border border-[#555] rounded-full pl-12 pr-4 text-white focus:border-[#ff3d9a] focus:outline-none" />
-            </div>
-          </div>
-          <div>
-            <label className="text-[#b0b0b0] mb-2 block">Password</label>
-            <div className="relative">
-              <Lock className="absolute left-4 top-1/2 -translate-y-1/2 text-[#8a8a8a] w-6 h-6" />
-              <input type={showPass? "text" : "password"} value={pass} onChange={(e)=>setPass(e.target.value)} placeholder="Enter your password" className="w-full h-[56px] bg-[#222] border border-[#555] rounded-full pl-12 pr-12 text-white focus:border-[#ff3d9a] focus:outline-none" />
-              <button type="button" onClick={()=>setShowPass(!showPass)} className="absolute right-4 top-1/2 -translate-y-1/2 text-[#8a8a8a]">{showPass? <EyeOff/> : <Eye/>}</button>
-            </div>
-          </div>
-          <button onClick={()=> onLogin(name || "Laachi User")} className="w-full h-[56px] rounded-full bg-gradient-to-r from-[#ff5ca8] to-[#8e2cff] text-white text-[20px] font-medium">Login</button>
+
+        <label style={{ color: "#bbb", fontSize: "14px" }}>Name</label>
+        <div style={{ background: "#2b2b2b", border: "1px solid #555", borderRadius: "28px", height: "48px", display: "flex", alignItems: "center", padding: "0 16px", margin: "8px 0 22px" }}>
+          <span style={{ color: "#999", marginRight: "12px" }}>👤</span>
+          <input placeholder="Enter your name" style={{ background: "transparent", border: "none", outline: "none", color: "white", width: "100%" }} />
         </div>
+
+        <label style={{ color: "#bbb", fontSize: "14px" }}>Password</label>
+        <div style={{ background: "#2b2b2b", border: "1px solid #555", borderRadius: "28px", height: "48px", display: "flex", alignItems: "center", padding: "0 16px", margin: "8px 0 32px" }}>
+          <span style={{ color: "#999", marginRight: "12px" }}>🔒</span>
+          <input type="password" placeholder="Enter your password" style={{ background: "transparent", border: "none", outline: "none", color: "white", width: "100%" }} />
+          <span style={{ color: "#999" }}>👁️</span>
+        </div>
+
+        <button onClick={()=>onLogin?.("User")} style={{ width: "100%", height: "50px", borderRadius: "28px", background: "linear-gradient(90deg,#ff6ea8,#a855ff)", color: "white", fontSize: "19px", border: "none" }}>Login</button>
+        
+        <p style={{ textAlign: "center", color: "#c07cff", marginTop: "18px", fontSize: "14px" }}>Forgot Password?</p>
+        <p style={{ textAlign: "center", color: "#888", marginTop: "22px", fontSize: "12px" }}>Don't have an account? <span style={{ color: "#d070ff", fontWeight: 600 }}>Sign up</span></p>
       </div>
     </div>
   );
