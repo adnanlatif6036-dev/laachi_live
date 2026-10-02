@@ -41,9 +41,9 @@ export default function App(){
   if(view==='profile') return <ProfilePage coins={coins} onBack={()=>setView('home')} />
   if(view==='room' && selectedRoom){
   return <RoomPage room={selectedRoom} onBack={()=>setView('home')} />
-                                                                  }
-    )
-  }
+                                                                  
+    
+  
   return (
     <div style={{minHeight:"100vh", background:"#000", color:"#fff", paddingBottom:80}}>
       <div style={{padding:16, background:"#111", position:"sticky", top:0, borderBottom:"1px solid #222"}}>
