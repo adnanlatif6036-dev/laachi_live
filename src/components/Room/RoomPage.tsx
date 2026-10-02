@@ -1,33 +1,39 @@
-import { useEffect } from "react";
+import { useEffect, useRef } from "react";
 import { ZegoUIKitPrebuilt } from "@zegocloud/zego-uikit-prebuilt";
 
 export default function RoomPage(props: any) {
+  const containerRef = useRef<HTMLDivElement>(null);
+
   useEffect(() => {
-    const urlParams = new URL(window.location.href).searchParams;
-    const roomFromPath = window.location.pathname.split("/").pop();
-    const roomID = props?.room?.id || props?.room?.name || roomFromPath || urlParams.get("room") || "laachi123";
+    const join = async () => {
+      if (!containerRef.current) return;
 
-    const appID = 854290603;
-    const serverSecret = "fb2e60c721c96f79f77d12ee78c3f9e481d47292f731fb0624c5097a6bac4254";
+      const roomID = props?.room?.id || window.location.pathname.split("/").pop() || "laachi123";
+      
+      const appID = 854290603;
+      const serverSecret = "68aca8cef7ac7cc1df6165512e7c61d8";
 
-    const userID = Math.floor(Math.random() * 10000) + "";
-    const userName = "User" + userID;
+      const userID = Math.floor(Math.random() * 10000) + "";
+      const userName = "User_" + userID;
 
-    const kitToken = ZegoUIKitPrebuilt.generateKitTokenForTest(
-      appID,
-      serverSecret,
-      roomID,
-      userID,
-      userName
-    );
+      const kitToken = ZegoUIKitPrebuilt.generateKitTokenForTest(
+        appID,
+        serverSecret,
+        roomID,
+        userID,
+        userName
+      );
 
-    const zp = ZegoUIKitPrebuilt.create(kitToken);
-    zp.joinRoom({
-      container: document.getElementById("root") as HTMLElement,
-      scenario: { mode: ZegoUIKitPrebuilt.GroupCall },
-      showPreJoinView: false,
-    });
+      const zp = ZegoUIKitPrebuilt.create(kitToken);
+      zp.joinRoom({
+        container: containerRef.current as Element,
+        scenario: { mode: ZegoUIKitPrebuilt.GroupCall },
+        showPreJoinView: false,
+        showScreenSharingButton: false,
+      });
+    };
+    join();
   }, []);
 
-  return <div style={{ width: "100vw", height: "100vh" }} />;
+  return <div ref={containerRef} style={{ width: "100vw", height: "100vh", background: "#000" }} />;
 }
