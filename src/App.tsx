@@ -9,7 +9,7 @@ const rooms = [
 
 export default function App() {
   const [selected, setSelected] = useState<any>(null);
-  const [tab, setTab] = useState("home"); // home | live | message | profile
+  const [tab, setTab] = useState("home");
   const [user, setUser] = useState<any>(() => {
     const s = localStorage.getItem("laachi_user");
     return s? JSON.parse(s) : null;
@@ -17,12 +17,33 @@ export default function App() {
   const [name, setName] = useState("");
   const [pass, setPass] = useState("");
 
+  // SECURE LOGIN / SIGNUP LOGIC
   const doSignUp = () => {
     if (!name ||!pass) return alert("نام اور پاسورڈ لکھیں");
-    localStorage.setItem("laachi_user", JSON.stringify({ name }));
-    setUser({ name });
+
+    const savedPass = localStorage.getItem(`user_${name}`);
+
+    if (savedPass) {
+      // User pehle se hai
+      if (savedPass!== pass) {
+        return alert("پاسورڈ غلط ہے! صحیح پاسورڈ لکھیں");
+      }
+      localStorage.setItem("laachi_user", JSON.stringify({ name }));
+      setUser({ name });
+    } else {
+      // Naya user
+      localStorage.setItem(`user_${name}`, pass);
+      localStorage.setItem("laachi_user", JSON.stringify({ name }));
+      setUser({ name });
+    }
   };
-  const logout = () => { localStorage.removeItem("laachi_user"); setUser(null); setSelected(null); setTab("home"); };
+
+  const logout = () => {
+    localStorage.removeItem("laachi_user");
+    setUser(null);
+    setSelected(null);
+    setTab("home");
+  };
 
   if (selected) {
     return (
@@ -35,14 +56,13 @@ export default function App() {
           <div style={{ marginTop: 25, background: "#111", padding: 20, borderRadius: 15, border: "1px solid #222" }}>
             <p>🎤 Voice Chat - Ready</p>
             <button style={{ marginTop: 15, background: "#ff1493", color: "#fff", padding: "12px 30px", borderRadius: 25, border: "none", fontWeight: "bold" }}>Join Voice (Coming Soon)</button>
-            <p style={{fontSize:11, color:"#666", marginTop:10}}>Agora 10,000 mins free baad me jorein ge</p>
+            <p style={{fontSize:11, color:"#666", marginTop:10}}>Agora 10,000 mins free - baad me jorein ge</p>
           </div>
         </div>
       </div>
     );
   }
 
-  // LOGIN PAGE
   if (!user) {
     return (
       <div style={{ background: "#000", color: "#fff", minHeight: "100vh", display: "flex", flexDirection: "column", alignItems: "center", fontFamily: "sans-serif", padding: 20 }}>
@@ -59,6 +79,7 @@ export default function App() {
             <label style={{ fontSize: 12, color: "#888" }}>Password</label>
             <input value={pass} onChange={e => setPass(e.target.value)} type="password" placeholder="Password likhein" style={{ width: "100%", padding: 12, borderRadius: 10, border: "1px solid #333", marginTop: 5, marginBottom: 15, background: "#1e1e1e", color: "#fff", boxSizing: "border-box" }} />
             <button onClick={doSignUp} style={{ width: "100%", background: "#ff1493", color: "#fff", border: "none", padding: 12, borderRadius: 25, fontWeight: "bold", fontSize: 16 }}>Continue</button>
+            <p style={{fontSize:10, color:"#555", textAlign:"center", marginTop:10}}>Pehli bar naam likho ge to account ban jayega, dosri bar same naam + ghalat password pe error ayega</p>
           </div>
         </div>
       </div>
@@ -67,13 +88,11 @@ export default function App() {
 
   return (
     <div style={{ background: "#000", color: "#fff", minHeight: "100vh", fontFamily: "sans-serif", paddingBottom: 70 }}>
-      {/* HEADER */}
       <div style={{ display: "flex", justifyContent: "space-between", padding: "15px 20px", alignItems: "center", borderBottom: "1px solid #111", position: "sticky", top: 0, background: "#000", zIndex: 10 }}>
         <h2 style={{ margin: 0 }}><span style={{ color: "#ff1493" }}>Laachi</span>Live</h2>
         <span style={{ background: "#1a1a1a", padding: "6px 12px", borderRadius: 15, fontSize: 12, border: "1px solid #333" }}>👤 {user.name} • 🪙 1000</span>
       </div>
 
-      {/* CONTENT */}
       {tab === "home" && (
         <div style={{ padding: 15 }}>
           <h3 style={{ margin: "5px 0 12px 0" }}>🔥 Live Rooms</h3>
@@ -120,7 +139,6 @@ export default function App() {
         </div>
       )}
 
-      {/* BOTTOM 4 BUTTONS - FIXED */}
       <div style={{ position: "fixed", bottom: 0, left: 0, right: 0, background: "#0a0a0a", borderTop: "1px solid #222", display: "flex", justifyContent: "space-around", padding: "8px 0 12px 0" }}>
         <button onClick={() => setTab("home")} style={{ background: "none", border: "none", color: tab === "home"? "#ff1493" : "#666", display: "flex", flexDirection: "column", alignItems: "center", fontSize: 11 }}>
           <span style={{ fontSize: 22 }}>🏠</span>Home
