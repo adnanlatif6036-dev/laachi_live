@@ -1,6 +1,6 @@
 import { useState } from "react";
 
-const rooms = [
+const initialRooms = [
   { id: "L", name: "Laachi Queen", cat: "Desi", color: "#ff1493", viewers: "2.1k" },
   { id: "J", name: "Jalalpur Doll", cat: "Punjabi", color: "#8a2be2", viewers: "1.8k" },
   { id: "G", name: "Gujrat Rose", cat: "New", color: "#00bfff", viewers: "890" },
@@ -10,6 +10,10 @@ const rooms = [
 export default function App() {
   const [selected, setSelected] = useState<any>(null);
   const [tab, setTab] = useState("home");
+  const [rooms, setRooms] = useState(() => {
+    const saved = localStorage.getItem("laachi_rooms");
+    return saved? JSON.parse(saved) : initialRooms;
+  });
   const [user, setUser] = useState<any>(() => {
     const s = localStorage.getItem("laachi_user");
     return s? JSON.parse(s) : null;
@@ -17,7 +21,33 @@ export default function App() {
   const [name, setName] = useState("");
   const [pass, setPass] = useState("");
   const [showPass, setShowPass] = useState(false);
+  const [showCreate, setShowCreate] = useState(false);
+  const [newRoomName, setNewRoomName] = useState("");
+  const [newRoomCat, setNewRoomCat] = useState("Desi");
   const myId = useState(() => Math.floor(Math.random()*90000)+10000)[0];
+
+  const saveRooms = (newRooms: any[]) => {
+    setRooms(newRooms);
+    localStorage.setItem("laachi_rooms", JSON.stringify(newRooms));
+  };
+
+  const handleCreateRoom = () => {
+    if (!newRoomName) return alert("Room ka naam likho!");
+    const colors = ["#ff1493", "#8a2be2", "#00bfff", "#ff8c00", "#00ff7f", "#ff4500"];
+    const newRoom = {
+      id: newRoomName[0].toUpperCase(),
+      name: newRoomName,
+      cat: newRoomCat,
+      color: colors[Math.floor(Math.random()*colors.length)],
+      viewers: "1",
+      owner: user.name
+    };
+    saveRooms([newRoom,...rooms]);
+    setNewRoomName("");
+    setShowCreate(false);
+    setTab("home");
+    alert("Room ban gaya! Home par dekho!");
+  };
 
   const doSignUp = () => {
     if (!name ||!pass) return alert("نام اور پاسورڈ لکھیں");
@@ -35,7 +65,7 @@ export default function App() {
     setUser({ name });
   };
   const googleLogin = () => {
-    const gName = "Google User";
+    const gName = "Umais Google";
     localStorage.setItem("laachi_user", JSON.stringify({ name: gName }));
     setUser({ name: gName });
   };
@@ -51,7 +81,10 @@ export default function App() {
         <div style={{ marginTop: 40, textAlign: "center" }}>
           <div style={{ width: 90, height: 90, background: selected.color, borderRadius: 45, margin: "0 auto", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 45 }}>{selected.id}</div>
           <h2>{selected.name} LIVE</h2>
-          <p style={{ color: "#aaa" }}>{selected.viewers} watching • {user?.name}</p>
+          <p style={{ color: "#aaa" }}>{selected.viewers} watching {selected.owner? `• Owner: ${selected.owner}` : ""}</p>
+          <div style={{ marginTop: 25, background: "#111", padding: 20, borderRadius: 15, border: "1px solid #222" }}>
+            <p>🎤 9 Holders Voice Room (Coming Soon)</p>
+          </div>
         </div>
       </div>
     );
@@ -81,18 +114,56 @@ export default function App() {
 
   return (
     <div style={{ background: "#000", color: "#fff", minHeight: "100vh", paddingBottom: 70 }}>
-      <div style={{ display: "flex", justifyContent: "space-between", padding: "15px 20px", borderBottom: "1px solid #111", position: "sticky", top: 0, background: "#000" }}>
+      <div style={{ display: "flex", justifyContent: "space-between", padding: "15px 20px", borderBottom: "1px solid #111", position: "sticky", top: 0, background: "#000", zIndex: 10 }}>
         <h2 style={{ margin: 0 }}><span style={{ color: "#ff1493" }}>Laachi</span>Live</h2>
         <span style={{ background: "#1a1a1a", padding: "6px 12px", borderRadius: 15, fontSize: 12 }}>👤 {user.name}</span>
       </div>
-      {tab === "home" && (
-        <div style={{ padding: 15 }}>
-          <h3>🔥 Live Rooms</h3>
-          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12 }}>
-            {rooms.map(r => (<div key={r.id} onClick={() => setSelected(r)} style={{ background: "#111", borderRadius: 15, overflow: "hidden", border: "1px solid #222" }}><div style={{ background: r.color, height: 120, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 40 }}>{r.id}</div><div style={{ padding: 10 }}><b>{r.name}</b><div style={{ fontSize: 11, color: "#aaa" }}>{r.cat} • {r.viewers}</div></div></div>))}
+
+      {showCreate && (
+        <div style={{ position: "fixed", top: 0, left: 0, right: 0, bottom: 0, background: "rgba(0,0,0,0.8)", zIndex: 100, display: "flex", alignItems: "center", justifyContent: "center", padding: 20 }}>
+          <div style={{ background: "#111", borderRadius: 18, padding: 20, width: "100%", maxWidth: 320, border: "1px solid #333" }}>
+            <h3 style={{ marginTop: 0 }}>Create New Room</h3>
+            <label style={{ fontSize: 12, color: "#888" }}>Room Name</label>
+            <input value={newRoomName} onChange={e => setNewRoomName(e.target.value)} placeholder="Jaise: Lahore Friends" style={{ width: "100%", padding: 12, borderRadius: 10, border: "1px solid #333", background: "#1e1e1e", color: "#fff", marginTop: 5, marginBottom: 12, boxSizing: "border-box" }} />
+            <label style={{ fontSize: 12, color: "#888" }}>Category</label>
+            <select value={newRoomCat} onChange={e => setNewRoomCat(e.target.value)} style={{ width: "100%", padding: 12, borderRadius: 10, border: "1px solid #333", background: "#1e1e1e", color: "#fff", marginTop: 5, marginBottom: 15, boxSizing: "border-box" }}>
+              <option>Desi</option><option>Punjabi</option><option>New</option><option>Trending</option><option>Masti</option>
+            </select>
+            <div style={{ display: "flex", gap: 10 }}>
+              <button onClick={() => setShowCreate(false)} style={{ flex: 1, background: "#222", color: "#fff", border: "1px solid #333", padding: 12, borderRadius: 25 }}>Cancel</button>
+              <button onClick={handleCreateRoom} style={{ flex: 1, background: "#ff1493", color: "#fff", border: "none", padding: 12, borderRadius: 25, fontWeight: "bold" }}>Create</button>
+            </div>
           </div>
         </div>
       )}
+
+      {tab === "home" && (
+        <div style={{ padding: 15 }}>
+          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 12 }}>
+            <h3 style={{ margin: 0 }}>🔥 Live Rooms ({rooms.length})</h3>
+            <button onClick={() => setShowCreate(true)} style={{ background: "#ff1493", color: "#fff", border: "none", padding: "6px 14px", borderRadius: 20, fontSize: 12, fontWeight: "bold" }}>+ Create Room</button>
+          </div>
+          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12 }}>
+            {rooms.map((r: any) => (
+              <div key={r.name + r.id} onClick={() => setSelected(r)} style={{ background: "#111", borderRadius: 15, overflow: "hidden", border: "1px solid #222" }}>
+                <div style={{ background: r.color, height: 120, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 40 }}>{r.id}</div>
+                <div style={{ padding: 10 }}><b style={{ fontSize: 13 }}>{r.name}</b><div style={{ fontSize: 11, color: "#aaa" }}>{r.cat} • {r.viewers} {r.owner? `• ${r.owner}` : ""}</div></div>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {tab === "live" && (
+        <div style={{ padding: 30, textAlign: "center" }}>
+          <h2>🎙️ Go Live</h2>
+          <p style={{ color: "#888", fontSize: 13, marginBottom: 20 }}>Apna khud ka room banao</p>
+          <button onClick={() => setShowCreate(true)} style={{ background: "#ff1493", color: "#fff", border: "none", padding: "12px 25px", borderRadius: 25, fontWeight: "bold" }}>+ Create My Room</button>
+        </div>
+      )}
+
+      {tab === "message" && <div style={{ padding: 20 }}><h3>💬 Messages</h3><p style={{ color: "#666" }}>No messages yet</p></div>}
+
       {tab === "profile" && (
         <div>
           <div style={{ background: "linear-gradient(135deg, #ff1493, #8a2be2)", padding: 25 }}>
@@ -118,7 +189,7 @@ export default function App() {
           <button onClick={logout} style={{ width: "90%", margin: "20px 5%", background: "#222", color: "#ff4d4d", border: "1px solid #333", padding: 13, borderRadius: 12 }}>Logout</button>
         </div>
       )}
-      {tab!== "home" && tab!== "profile" && <div style={{ padding: 30, textAlign: "center" }}>Coming Soon</div>}
+
       <div style={{ position: "fixed", bottom: 0, left: 0, right: 0, background: "#0a0a0a", borderTop: "1px solid #222", display: "flex", justifyContent: "space-around", padding: "8px 0" }}>
         <button onClick={() => setTab("home")} style={{ background: "none", border: "none", color: tab === "home"? "#ff1493" : "#666" }}>🏠<br/>Home</button>
         <button onClick={() => setTab("live")} style={{ background: "none", border: "none", color: tab === "live"? "#ff1493" : "#666" }}>📹<br/>Live</button>
