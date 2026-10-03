@@ -8,7 +8,7 @@ export default function CreateRoomModal({ onClose }: { onClose: () => void }) {
 
   const createRoom = async () => {
     if(!title) return alert('Title likho')
-    const { error } = await supabase.from('rooms').insert({ title, topic, is_live: true })
+    const { error } = await supabase.from('rooms').insert([{ title, topic, is_live: true }])
     if(!error){ alert('Real Room Ban Gaya!'); onClose() }
   }
 
