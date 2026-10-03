@@ -13,14 +13,17 @@ export default function RoomPage({ room, onBack, userName }: Props) {
     <div style={{ minHeight: "100vh", background: "#0d0d0d", color: "white", display: "flex", flexDirection: "column" }}>
       <div style={{ padding: "14px", display: "flex", justifyContent: "space-between", alignItems: "center", borderBottom: "1px solid #1e1e1e" }}>
         <button onClick={onBack} style={{ background: "#1e1e1e", border: "1px solid #2a2a2a", color: "white", padding: "8px 14px", borderRadius: "20px" }}>← Leave</button>
-        <div style={{ textAlign: "center" }}><div style={{ fontWeight: 700, fontSize: "14px" }}>{room?.name}</div><div style={{ fontSize: "10px", color: "#888" }}>ID: {room?.id}</div></div>
-        <div style={{ fontSize: "12px", color: "#ff9a00" }}>{room?.count} online</div>
+        <div style={{ textAlign: "center" }}>
+          <div style={{ fontWeight: 700, fontSize: "14px" }}>{room?.title || room?.name || "Laachi Room"}</div>
+          <div style={{ fontSize: "10px", color: "#888" }}>ID: {String(room?.id).slice(0,8)}</div>
+        </div>
+        <div style={{ fontSize: "12px", color: "#ff9a00" }}>{room?.count || room?.usersCount || 1} online</div>
       </div>
 
       <div style={{ padding: "16px", display: "grid", gridTemplateColumns: "repeat(4,1fr)", gap: "12px" }}>
         {[...Array(8)].map((_, i) => (
           <div key={i} style={{ aspectRatio: "1", background: i === 0? "#ff9a00" : "#171717", border: "1px solid #262626", borderRadius: "20px", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center" }}>
-            <div style={{ width: "44px", height: "44px", borderRadius: "50%", background: i === 0? "black" : "#2a2a2a", display: "flex", alignItems: "center", justifyContent: "center" }}>{i === 0? userName?.[0] : "🎤"}</div>
+            <div style={{ width: "44px", height: "44px", borderRadius: "50%", background: i === 0? "black" : "#2a2a2a", display: "flex", alignItems: "center", justifyContent: "center" }}>{i === 0? userName?.[0]?.toUpperCase() : "🎤"}</div>
             <div style={{ fontSize: "9px", marginTop: "6px", color: i === 0? "black" : "#888" }}>{i === 0? "You" : `Seat ${i+1}`}</div>
           </div>
         ))}
